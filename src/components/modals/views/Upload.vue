@@ -144,7 +144,7 @@ export default {
 
     newFiles: {
         get() {
-            return this.$store.getters['fm/getFinalStates'];
+            return this.$store.getters['fm/getNewFiles'];
         },
         set(files) {
             this.$store.commit('fm/setNewFiles', files)
@@ -186,12 +186,12 @@ export default {
           }
         });
       }
-
+      this.newFiles = [];
     },
   },
   watch: {
-    newFiles (newFile, oldFile) {
-      console.log(`We have ${newFile}!`)
+    '$store.state.newFiles': function() {
+      console.log("changed file:" + this.$store.state.newFiles);
     }
   }
 };

@@ -126,7 +126,7 @@ export default {
     }),
     newFiles: {
         get() {
-            return this.$store.getters['fm/getFinalStates'];
+            return this.$store.getters['fm/getNewFiles'];
         },
         set(files) {
             this.$store.commit('fm/setNewFiles', files)

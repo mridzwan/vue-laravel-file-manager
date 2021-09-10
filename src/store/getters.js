@@ -48,7 +48,7 @@ export default {
   /*
    * Get upload files value
    */
-  getFinalStates(state) {
+  getNewFiles(state) {
       return state.newFiles;
   },
 };
