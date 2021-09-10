@@ -234,7 +234,7 @@ export default {
     /* 
      * Drag and drop upload handler 
      */
-    fileDragnDrop(event) {
+    async fileDragnDrop(event) {
       console.log("File drag n drop:");
       console.log(event);
       const files = await getFilesFromDataTransferItems(evt.dataTransfer.items)
