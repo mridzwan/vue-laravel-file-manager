@@ -2,7 +2,7 @@
   <div class="fm d-flex flex-column"
        v-bind:class="{ 'fm-full-screen': fullScreen }">
     <navbar/>
-    <div class="fm-body" v-on:dragover.prevent v-on:drop.prevent="fileDragnDrop($event)">
+    <div class="fm-body" @drop.prevent="fileDragnDrop($event)" @dragenter.prevent @dragover.prevent>
       <notification/>
       <context-menu/>
       <modal v-if="showModal"/>
