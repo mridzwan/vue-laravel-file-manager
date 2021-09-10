@@ -2,7 +2,7 @@
   <div class="fm d-flex flex-column"
        v-bind:class="{ 'fm-full-screen': fullScreen }">
     <navbar/>
-    <div class="fm-body">
+    <div class="fm-body" v-on:dragover.prevent v-on:drop.prevent="fileDragnDrop($event)">
       <notification/>
       <context-menu/>
       <modal v-if="showModal"/>
@@ -47,6 +47,8 @@ import ContextMenu from './components/blocks/ContextMenu.vue';
 import Notification from './components/blocks/Notification.vue';
 // Mixins
 import translate from './mixins/translate';
+
+import { getFilesFromDataTransferItems } from 'datatransfer-files-promise';
 
 export default {
   name: 'FileManager',
@@ -228,6 +230,17 @@ export default {
         this.$store.commit('fm/setActiveManager', managerName);
       }
     },
+
+    /* 
+     * Drag and drop upload handler 
+     */
+    fileDragnDrop(event) {
+      console.log("File drag n drop:");
+      console.log(event);
+      const files = await getFilesFromDataTransferItems(evt.dataTransfer.items)
+      console.log('files', files);
+    }
+
   },
 };
 </script>
