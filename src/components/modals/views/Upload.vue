@@ -104,7 +104,7 @@ export default {
   data() {
     return {
       // selected files
-      newFiles: [],
+      // newFiles: [],
 
       // overwrite if exists
       overwrite: 0,
@@ -142,6 +142,15 @@ export default {
       return this.bytesToHuman(size);
     },
 
+    newFiles: {
+        get() {
+            return this.$store.getters['fm/getFinalStates'];
+        },
+        set(files) {
+            this.$store.commit('fm/setNewFiles', files)
+        }
+    },
+
   },
   methods: {
     /**
@@ -177,8 +186,14 @@ export default {
           }
         });
       }
+
     },
   },
+  watch: {
+    newFiles (newFile, oldFile) {
+      console.log(`We have ${newFile}!`)
+    }
+  }
 };
 </script>
 

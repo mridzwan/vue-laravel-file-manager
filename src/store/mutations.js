@@ -92,4 +92,11 @@ export default {
     state.fileCallback = null;
     state.fullScreen = false;
   },
+
+  /*
+   * Set upload file variable value
+   */
+  setNewFiles(state, files)  {
+      state.newFiles = files
+  },
 };

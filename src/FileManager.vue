@@ -124,6 +124,14 @@ export default {
       showModal: (state) => state.modal.showModal,
       fullScreen: (state) => state.settings.fullScreen,
     }),
+    newFiles: {
+        get() {
+            return this.$store.getters['fm/getFinalStates'];
+        },
+        set(files) {
+            this.$store.commit('fm/setNewFiles', files)
+        }
+    },
   },
   methods: {
     /**
@@ -235,8 +243,8 @@ export default {
      * Drag and drop upload handler 
      */
     async fileDragnDrop(event) {
-      console.log("File drag n drop:");
       const files = await getFilesFromDataTransferItems(event.dataTransfer.items)
+      this.newFiles = event.dataTransfer.files;
       console.log('files', files);
     }
 

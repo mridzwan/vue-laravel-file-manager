@@ -44,4 +44,11 @@ export default {
   inactiveManager(state) {
     return state.activeManager === 'left' ? 'right' : 'left';
   },
+
+  /*
+   * Get upload files value
+   */
+  getFinalStates(state) {
+      return state.newFiles;
+  },
 };
