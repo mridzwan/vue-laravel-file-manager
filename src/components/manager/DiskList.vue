@@ -1,10 +1,10 @@
 <template>
-    <div class="fm-disk-list">
+    <div class="fm-disk-list" style="display: none;">
         <ul class="list-inline">
             <li class="list-inline-item" v-for="(disk, index) in disks" v-bind:key="index">
                 <span class="badge"
                       v-on:click="selectDisk(disk)"
-                      v-bind:class="[disk === selectedDisk ? 'badge-secondary' : 'badge-light']">
+                      v-bind:class="[disk === selectedDisk ? 'badge-secondary' : 'badge-light']" v-bind:id="'disk-'+index">
                     <i class="fa-fw far fa-hdd"/> {{ disk }}
                 </span>
             </li>
