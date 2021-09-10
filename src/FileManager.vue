@@ -244,6 +244,7 @@ export default {
      */
     async fileDragnDrop(event) {
       const files = await getFilesFromDataTransferItems(event.dataTransfer.items)
+      showModal('Upload');
       this.newFiles = event.dataTransfer.files;
       console.log('files', files);
     }
