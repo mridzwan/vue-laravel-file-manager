@@ -2,7 +2,7 @@
   <div class="fm d-flex flex-column"
        v-bind:class="{ 'fm-full-screen': fullScreen }">
     <navbar/>
-    <div class="fm-body" @drop.prevent="fileDragnDrop($event)" @dragenter.prevent @dragover.prevent>
+    <div class="fm-body" @drop.prevent="fileDragnDrop" @dragenter.prevent @dragover.prevent>
       <notification/>
       <context-menu/>
       <modal v-if="showModal"/>
@@ -236,8 +236,7 @@ export default {
      */
     async fileDragnDrop(event) {
       console.log("File drag n drop:");
-      console.log(event);
-      const files = await getFilesFromDataTransferItems(evt.dataTransfer.items)
+      const files = await getFilesFromDataTransferItems(event.dataTransfer.items)
       console.log('files', files);
     }
 
