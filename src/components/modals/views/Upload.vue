@@ -289,34 +289,41 @@ export default {
     },
 
     uploadFilesWithDir() {
-      var uploadCount = 0;
-      for (let i = 0; i < this.newFolders.length; i++) {
-        let folder = this.newFolders[i];
-        let files = [];
-        
-        for (let x = 0; x < this.newFiles.length; x++) {
-          let file = this.newFiles[x];
-          let fullpath = ((file.filepath) ? file.filepath : file.webkitRelativePath);
-          if(fullpath == (folder + '/' + file.name))
-            files.push(file);
-        }
+      this.uploadFilesByFolder(JSON.parse(JSON.stringify(this.newFiles)), JSON.parse(JSON.stringify(this.newFolders)), 1, this.newFolders.length);
+    },
 
-        if(files.length) {
-          this.$store.dispatch('fm/upload', {
-            files: files,
-            directory: folder,
-            overwrite: this.overwrite,
-          }).then((response) => {
-            // if upload is successful
-            if (response.data.result.status === 'success') {
-              // close modal window
-              uploadCount++;
-              if(uploadCount >= this.newFolders.length) {
-                this.hideModal();
-              }
-            }
-          });
+    uploadFilesByFolder(files, folders, currFolder, maxFolder) {
+      let folder = folders.shift();
+      let uploadFiles = [];
+
+      for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        let fullpath = ((file.filepath) ? file.filepath : file.webkitRelativePath);
+        if(fullpath == (folder + '/' + file.name)) {
+          uploadFiles.push(file);
         }
+      }
+
+      if(uploadFiles.length) {
+        this.$store.dispatch('fm/upload', {
+          files: uploadFiles,
+          directory: folder,
+          overwrite: this.overwrite,
+          currentIndex: currFolder,
+          maxIndex: maxFolder
+        }).then((response) => {
+          // if upload is successful
+          if (response.data.result.status === 'success') {
+            // close modal window
+            if(currFolder >= this.newFolders.length) {
+              this.hideModal();
+            }
+            else {
+              currFolder += 1;
+              this.uploadFilesByFolder(files, folders, currFolder, maxFolder);
+            }
+          }
+        });
       }
     },
 

@@ -232,7 +232,7 @@ export default {
    * @param overwrite
    * @returns {Promise}
    */
-  upload({ getters, commit, dispatch }, { files, directory, overwrite }) {
+  upload({ getters, commit, dispatch }, { files, directory, overwrite, currentIndex, maxIndex }) {
     // directory where files will be uploaded
     const selectedDirectory = getters.selectedDirectory;
 
@@ -258,7 +258,11 @@ export default {
     // axios config - progress bar
     const config = {
       onUploadProgress(progressEvent) {
-        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        let progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        if (currentIndex && maxIndex) {
+          progress /= 100;
+          progress *= (currentIndex / maxIndex);
+        }
         commit('messages/setProgress', progress);
       },
     };
