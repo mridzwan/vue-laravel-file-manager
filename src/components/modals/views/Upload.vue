@@ -276,9 +276,6 @@ export default {
             this.hideModal();
           }
         });
-
-        this.newFiles = [];
-        this.newFolders = [];
       }
     },
 
@@ -292,6 +289,7 @@ export default {
     },
 
     uploadFilesWithDir() {
+      var uploadCount = 0;
       for (let i = 0; i < this.newFolders.length; i++) {
         let folder = this.newFolders[i];
         let files = [];
@@ -308,13 +306,18 @@ export default {
             files: files,
             directory: folder,
             overwrite: this.overwrite,
+          }).then((response) => {
+            // if upload is successful
+            if (response.data.result.status === 'success') {
+              // close modal window
+              uploadCount++;
+              if(uploadCount >= this.newFolders.length) {
+                this.hideModal();
+              }
+            }
           });
         }
       }
-
-      this.hideModal();
-      this.newFiles = [];
-      this.newFolders = [];
     },
 
     /*
