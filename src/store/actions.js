@@ -232,14 +232,23 @@ export default {
    * @param overwrite
    * @returns {Promise}
    */
-  upload({ getters, commit, dispatch }, { files, overwrite }) {
+  upload({ getters, commit, dispatch }, { files, directory, overwrite }) {
     // directory where files will be uploaded
     const selectedDirectory = getters.selectedDirectory;
+
+    let customDir = '';
+    if(directory) {
+      if(selectedDirectory)
+        customDir = selectedDirectory + '/' + directory;
+      else
+        customDir = directory;
+    }
+    else customDir = selectedDirectory || '';
 
     // create new form data
     const data = new FormData();
     data.append('disk', getters.selectedDisk);
-    data.append('path', selectedDirectory || '');
+    data.append('path', customDir);
     data.append('overwrite', overwrite);
     // add file or files
     for (let i = 0; i < files.length; i += 1) {

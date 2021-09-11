@@ -7,34 +7,77 @@
             </button>
         </div>
         <div class="modal-body">
+            <div class="pb-3">
+                <div>Upload by:</div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="upload-type" id="upload-type-file" v-model="uploadType" v-bind:value="0" v-on:change="onUploadTypeChange">
+                    <label class="form-check-label" for="upload-type-file">File</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="upload-type" id="upload-type-folder" v-model="uploadType" v-bind:value="1" v-on:change="onUploadTypeChange">
+                    <label class="form-check-label" for="upload-type-folder">Folder</label>
+                </div>
+            </div>
             <div class="fm-btn-wrapper" v-show="!progressBar">
-                <button type="button" class="btn btn-secondary btn-block">
-                    {{ lang.btn.uploadSelect }}
-                </button>
-                <input type="file" multiple name="myfile" v-on:change="selectFiles($event)">
+                <div v-if="uploadType == 0">
+                  <button type="button" class="btn btn-secondary btn-block">
+                      {{ lang.btn.uploadSelect }}
+                  </button>
+                  <input type="file" multiple name="myfile" v-on:change="selectFiles($event)">
+                </div>
+                <div v-else>
+                  <button type="button" class="btn btn-secondary btn-block">
+                      {{ lang.btn.uploadSelectFolder }}
+                  </button>
+                  <input type="file" multiple directory webkitdirectory mozdirectory name="myfolder" v-on:change="selectFolder">
+                </div>
             </div>
             <div class="fm-upload-list" v-if="countFiles">
-                <div class="d-flex justify-content-between"
-                     v-for="(item, index) in newFiles"
-                     v-bind:key="index">
-                    <div class="w-75 text-truncate">
-                        <i class="far" v-bind:class="mimeToIcon(item.type)"/>
-                        {{ item.name }}
-                    </div>
-                    <div class="text-right">
-                        {{ bytesToHuman(item.size) }}
-                    </div>
+              <div v-if="uploadType == 0">
+                  <div class="d-flex justify-content-between"
+                      v-for="(item, index) in newFiles"
+                      v-bind:key="index">
+                      <div class="w-75 text-truncate">
+                          <i class="far" v-bind:class="mimeToIcon(item.type)"/>
+                          {{ item.name }}
+                      </div>
+                      <div class="text-right">
+                          {{ bytesToHuman(item.size) }}
+                      </div>
+                  </div>
+                  <hr>
+                  <div class="d-flex justify-content-between">
+                      <div>
+                          <strong>{{ lang.modal.upload.selected }}</strong>
+                          {{ newFiles.length }}
+                      </div>
+                      <div class="text-right">
+                          <strong>{{ lang.modal.upload.size }}</strong>
+                          {{ allFilesSize }}
+                      </div>
+                  </div>
                 </div>
-                <hr>
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <strong>{{ lang.modal.upload.selected }}</strong>
-                        {{ newFiles.length }}
-                    </div>
-                    <div class="text-right">
-                        <strong>{{ lang.modal.upload.size }}</strong>
-                        {{ allFilesSize }}
-                    </div>
+                <div v-else>
+                  <div class="d-flex justify-content-between">
+                      <div class="w-75 text-truncate">
+                          <i class="far" v-bind:class="mimeToIcon(null)"/>
+                          {{ getRootFolder }}
+                      </div>
+                      <div class="text-right">
+                          {{ allFilesSize }}
+                      </div>
+                  </div>
+                  <hr>
+                  <div class="d-flex justify-content-between">
+                      <div>
+                          <strong>{{ lang.modal.upload.selected }}</strong>
+                          {{ newFiles.length }}
+                      </div>
+                      <div class="text-right">
+                          <strong>{{ lang.modal.upload.size }}</strong>
+                          {{ allFilesSize }}
+                      </div>
+                  </div>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between">
@@ -108,6 +151,9 @@ export default {
 
       // overwrite if exists
       overwrite: 0,
+
+      // upload type (0 - file, 1 - folder)
+      uploadType: 0,
     };
   },
   computed: {
@@ -142,6 +188,13 @@ export default {
       return this.bytesToHuman(size);
     },
 
+    /*
+     * Get root folder name
+     */
+    getRootFolder() {
+      return this.newFolders.reduce((a, b) => a.length <= b.length ? a : b);
+    },
+
     newFiles: {
         get() {
             return this.$store.getters['fm/getNewFiles'];
@@ -151,6 +204,14 @@ export default {
         }
     },
 
+    newFolders: {
+        get() {
+            return this.$store.getters['fm/getNewFolders'];
+        },
+        set(folders) {
+            this.$store.commit('fm/setNewFolders', folders)
+        }
+    },
   },
   methods: {
     /**
@@ -169,14 +230,44 @@ export default {
     },
 
     /**
+     * Select folder
+     * @param event
+     */
+    selectFolder(event) {
+      // files selected?
+      if (event.target.files.length === 0) {
+        // no file selected
+        this.newFiles = [];
+      } else {
+        let folders = [];
+        for (let i = 0; i < event.target.files.length; i++) {
+          let file = event.target.files[i];
+          let folder = file.webkitRelativePath.replace(file.name,'');
+          if(folder)
+            folders.push(folder.substring(0, folder.length - 1));
+        }
+
+        // we have file or files
+        folders = [...new Set(folders)];
+        this.newFolders = folders;
+        this.newFiles = event.target.files;
+      }
+    },
+
+    /**
      * Upload new files
      */
     uploadFiles() {
+      // if folders exists
+      if (this.newFolders.length) {
+        this.createFolders(JSON.parse(JSON.stringify(this.newFolders)));
+      }
       // if files exists
-      if (this.countFiles) {
+      else if (this.countFiles) {
         // upload files
         this.$store.dispatch('fm/upload', {
           files: this.newFiles,
+          folders: this.newFolders,
           overwrite: this.overwrite,
         }).then((response) => {
           // if upload is successful
@@ -185,14 +276,71 @@ export default {
             this.hideModal();
           }
         });
+
+        this.newFiles = [];
+        this.newFolders = [];
       }
-      this.newFiles = [];
     },
+
+    createFolders(folders) {
+      this.$store.dispatch('fm/createDirectory', folders.shift()).then((response) => {
+        if(folders.length)
+          this.createFolders(folders);
+        else
+          this.uploadFilesWithDir();
+      });
+    },
+
+    uploadFilesWithDir() {
+      for (let i = 0; i < this.newFolders.length; i++) {
+        let folder = this.newFolders[i];
+        let files = [];
+        
+        for (let x = 0; x < this.newFiles.length; x++) {
+          let file = this.newFiles[x];
+          let fullpath = ((file.filepath) ? file.filepath : file.webkitRelativePath);
+          if(fullpath == (folder + '/' + file.name))
+            files.push(file);
+        }
+
+        if(files.length) {
+          this.$store.dispatch('fm/upload', {
+            files: files,
+            directory: folder,
+            overwrite: this.overwrite,
+          });
+        }
+      }
+
+      this.hideModal();
+      this.newFiles = [];
+      this.newFolders = [];
+    },
+
+    /*
+     * On upload type changed by user
+     */
+    onUploadTypeChange() {
+      this.newFiles = [];
+    }
   },
   watch: {
-    '$store.state.newFiles': function() {
-      console.log("changed file:" + this.$store.state.newFiles);
+    newFolders (newVal, oldVal) {
+      if(newVal.length)
+        this.uploadType = 1;
+      else
+        this.uploadType = 0;
     }
+  },
+  created() {
+    if(this.newFolders.length)
+      this.uploadType = 1;
+    else
+      this.uploadType = 0;
+  },
+  beforeDestroy() {
+    this.newFolders = [];
+    this.newFiles = [];
   }
 };
 </script>

@@ -51,4 +51,11 @@ export default {
   getNewFiles(state) {
       return state.newFiles;
   },
+
+  /*
+   * Get upload folders value
+   */
+  getNewFolders(state) {
+    return state.newFolders;
+  },
 };

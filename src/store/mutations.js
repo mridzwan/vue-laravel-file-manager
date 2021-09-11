@@ -97,6 +97,13 @@ export default {
    * Set upload file variable value
    */
   setNewFiles(state, files)  {
-      state.newFiles = files
+      state.newFiles = files;
+  },
+
+  /*
+   * Set upload folder variable value
+   */
+  setNewFolders(state, folders)  {
+    state.newFolders = folders;
   },
 };

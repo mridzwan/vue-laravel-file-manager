@@ -23,6 +23,7 @@ const en = {
     table: 'Table',
     upload: 'Upload',
     uploadSelect: 'Select files',
+    uploadSelectFolder: 'Select folder',
     hidden: ' Hidden files',
   },
   clipboard: {
@@ -122,7 +123,7 @@ const en = {
       selected: 'Selected:',
       size: 'Size:',
       skip: 'Skip',
-      title: 'Upload files',
+      title: 'Upload',
     },
     editor: {
       title: 'Editor',

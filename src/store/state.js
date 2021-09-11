@@ -28,4 +28,7 @@ export default {
 
   // file uploads
   newFiles: [],
+
+  // folder uploads
+  newFolders: [],
 };

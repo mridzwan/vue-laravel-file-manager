@@ -132,6 +132,14 @@ export default {
             this.$store.commit('fm/setNewFiles', files)
         }
     },
+    newFolders: {
+        get() {
+            return this.$store.getters['fm/getNewFolders'];
+        },
+        set(folders) {
+            this.$store.commit('fm/setNewFolders', folders)
+        }
+    },
   },
   methods: {
     /**
@@ -239,14 +247,34 @@ export default {
       }
     },
 
+    commitShowModal(modalName) {
+      // show selected modal
+      this.$store.commit('fm/modal/setModalState', {
+        modalName,
+        show: true,
+      });
+    },
+
     /* 
      * Drag and drop upload handler 
      */
     async fileDragnDrop(event) {
-      const files = await getFilesFromDataTransferItems(event.dataTransfer.items)
-      showModal('Upload');
-      this.newFiles = event.dataTransfer.files;
-      console.log('files', files);
+      const dropFiles = await getFilesFromDataTransferItems(event.dataTransfer.items)
+
+      let files = [];
+      let folders = [];
+      dropFiles.forEach((file, i) => {
+        let folder = file.filepath.replace(file.name,'');
+        if(folder)
+          folders.push(folder.substring(0, folder.length - 1));
+
+        files.push(file);
+      });
+
+      folders = [...new Set(folders)];
+      this.newFolders = folders;
+      this.newFiles = files;
+      this.commitShowModal('Upload');
     }
 
   },
