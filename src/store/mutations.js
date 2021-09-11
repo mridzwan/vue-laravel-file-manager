@@ -106,4 +106,8 @@ export default {
   setNewFolders(state, folders)  {
     state.newFolders = folders;
   },
+
+  setUploading(state, uploading) {
+    state.uploading = uploading;
+  },
 };

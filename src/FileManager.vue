@@ -140,6 +140,14 @@ export default {
             this.$store.commit('fm/setNewFolders', folders)
         }
     },
+    uploading: {
+        get() {
+            return this.$store.getters['fm/getUploading'];
+        },
+        set(uploading) {
+            this.$store.commit('fm/setUploading', uploading)
+        }
+    },
   },
   methods: {
     /**
@@ -171,20 +179,22 @@ export default {
         this.$store.commit('fm/messages/subtractLoading');
 
         // create notification, if find message text
-        if (Object.prototype.hasOwnProperty.call(response.data, 'result')) {
-          if (response.data.result.message) {
-            const message = {
-              status: response.data.result.status,
-              message: Object.prototype.hasOwnProperty.call(this.lang.response, response.data.result.message)
-                ? this.lang.response[response.data.result.message]
-                : response.data.result.message,
-            };
+        if(!this.uploading) {
+          if (Object.prototype.hasOwnProperty.call(response.data, 'result')) {
+            if (response.data.result.message) {
+              const message = {
+                status: response.data.result.status,
+                message: Object.prototype.hasOwnProperty.call(this.lang.response, response.data.result.message)
+                  ? this.lang.response[response.data.result.message]
+                  : response.data.result.message,
+              };
 
-            // show notification
-            EventBus.$emit('addNotification', message);
+              // show notification
+              EventBus.$emit('addNotification', message);
 
-            // set action result
-            this.$store.commit('fm/messages/setActionResult', message);
+              // set action result
+              this.$store.commit('fm/messages/setActionResult', message);
+            }
           }
         }
 

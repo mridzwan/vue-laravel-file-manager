@@ -31,4 +31,6 @@ export default {
 
   // folder uploads
   newFolders: [],
+
+  uploading: false,
 };

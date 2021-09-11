@@ -58,4 +58,8 @@ export default {
   getNewFolders(state) {
     return state.newFolders;
   },
+
+  getUploading(state) {
+    return state.uploading;
+  },
 };

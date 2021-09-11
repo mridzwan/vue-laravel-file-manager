@@ -258,11 +258,15 @@ export default {
     // axios config - progress bar
     const config = {
       onUploadProgress(progressEvent) {
-        let progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        let progress = (progressEvent.loaded * 100) / progressEvent.total;
         if (currentIndex && maxIndex) {
           progress /= 100;
-          progress *= (currentIndex / maxIndex);
+          progress += (currentIndex * 100) / maxIndex;
+
+          if(progress > 100)
+            progress = 100;
         }
+        progress = parseInt(progress);
         commit('messages/setProgress', progress);
       },
     };
@@ -270,15 +274,17 @@ export default {
     // upload files
     return POST.upload(data, config).then((response) => {
       // clear progress
-      commit('messages/clearProgress');
+      if((currentIndex && maxIndex && (currentIndex == maxIndex)) || (!currentIndex && !maxIndex)) {
+        commit('messages/clearProgress');
 
-      // if files uploaded successfully
-      if (
-        response.data.result.status === 'success'
-        && selectedDirectory === getters.selectedDirectory
-      ) {
-        // refresh content
-        dispatch('refreshManagers');
+        // if files uploaded successfully
+        if (
+          response.data.result.status === 'success'
+          && selectedDirectory === getters.selectedDirectory
+        ) {
+          // refresh content
+          dispatch('refreshManagers');
+        }
       }
 
       return response;

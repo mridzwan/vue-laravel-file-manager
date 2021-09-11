@@ -10,11 +10,11 @@
             <div class="pb-3">
                 <div>Upload by:</div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="upload-type" id="upload-type-file" v-model="uploadType" v-bind:value="0" v-on:change="onUploadTypeChange">
+                    <input class="form-check-input" type="radio" name="upload-type" id="upload-type-file" v-model="uploadType" v-bind:value="0" v-on:change="onUploadTypeChange" v-bind:disabled="uploading || progressBar > 0">
                     <label class="form-check-label" for="upload-type-file">File</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="upload-type" id="upload-type-folder" v-model="uploadType" v-bind:value="1" v-on:change="onUploadTypeChange">
+                    <input class="form-check-input" type="radio" name="upload-type" id="upload-type-folder" v-model="uploadType" v-bind:value="1" v-on:change="onUploadTypeChange" v-bind:disabled="uploading || progressBar > 0">
                     <label class="form-check-label" for="upload-type-folder">Folder</label>
                 </div>
             </div>
@@ -128,7 +128,7 @@
         <div class="modal-footer">
             <button class="btn"
                     v-bind:class="[countFiles ? 'btn-info' : 'btn-light']"
-                    v-bind:disabled="!countFiles"
+                    v-bind:disabled="!countFiles || uploading || progressBar > 0"
                     v-on:click="uploadFiles">{{ lang.btn.submit }}
             </button>
             <button class="btn btn-light" v-on:click="hideModal()">{{ lang.btn.cancel }}</button>
@@ -212,6 +212,15 @@ export default {
             this.$store.commit('fm/setNewFolders', folders)
         }
     },
+
+    uploading: {
+        get() {
+            return this.$store.getters['fm/getUploading'];
+        },
+        set(uploading) {
+            this.$store.commit('fm/setUploading', uploading)
+        }
+    },
   },
   methods: {
     /**
@@ -260,6 +269,7 @@ export default {
     uploadFiles() {
       // if folders exists
       if (this.newFolders.length) {
+        this.uploading = true;
         this.createFolders(JSON.parse(JSON.stringify(this.newFolders)));
       }
       // if files exists
@@ -280,50 +290,58 @@ export default {
     },
 
     createFolders(folders) {
-      this.$store.dispatch('fm/createDirectory', folders.shift()).then((response) => {
-        if(folders.length)
-          this.createFolders(folders);
-        else
-          this.uploadFilesWithDir();
-      });
+      if(this.uploading) {
+        this.$store.dispatch('fm/createDirectory', folders.shift()).then((response) => {
+          if(folders.length)
+            this.createFolders(folders);
+          else
+            this.uploadFilesWithDir();
+        });
+      }
     },
 
     uploadFilesWithDir() {
-      this.uploadFilesByFolder(JSON.parse(JSON.stringify(this.newFiles)), JSON.parse(JSON.stringify(this.newFolders)), 1, this.newFolders.length);
+      this.uploadFilesByFolder(this.newFiles, JSON.parse(JSON.stringify(this.newFolders)), 1, this.newFolders.length);
     },
 
     uploadFilesByFolder(files, folders, currFolder, maxFolder) {
-      let folder = folders.shift();
-      let uploadFiles = [];
+      if(this.uploading) {
+        let folder = folders.shift();
+        let uploadFiles = [];
 
-      for (let i = 0; i < files.length; i++) {
-        let file = files[i];
-        let fullpath = ((file.filepath) ? file.filepath : file.webkitRelativePath);
-        if(fullpath == (folder + '/' + file.name)) {
-          uploadFiles.push(file);
-        }
-      }
-
-      if(uploadFiles.length) {
-        this.$store.dispatch('fm/upload', {
-          files: uploadFiles,
-          directory: folder,
-          overwrite: this.overwrite,
-          currentIndex: currFolder,
-          maxIndex: maxFolder
-        }).then((response) => {
-          // if upload is successful
-          if (response.data.result.status === 'success') {
-            // close modal window
-            if(currFolder >= this.newFolders.length) {
-              this.hideModal();
-            }
-            else {
-              currFolder += 1;
-              this.uploadFilesByFolder(files, folders, currFolder, maxFolder);
-            }
+        for (let i = 0; i < files.length; i++) {
+          let file = files[i];
+          let fullpath = ((file.filepath) ? file.filepath : file.webkitRelativePath);
+          if(fullpath == (folder + '/' + file.name)) {
+            uploadFiles.push(file);
           }
-        });
+        }
+
+        if(uploadFiles.length) {
+          if(currFolder >= this.newFolders.length) {
+            this.uploading = false;
+          }
+
+          this.$store.dispatch('fm/upload', {
+            files: uploadFiles,
+            directory: folder,
+            overwrite: this.overwrite,
+            currentIndex: currFolder,
+            maxIndex: maxFolder
+          }).then((response) => {
+            // if upload is successful
+            if (response.data.result.status === 'success') {
+              // close modal window
+              if(currFolder >= this.newFolders.length) {
+                this.hideModal();
+              }
+              else {
+                currFolder += 1;
+                this.uploadFilesByFolder(files, folders, currFolder, maxFolder);
+              }
+            }
+          });
+        }
       }
     },
 
@@ -349,6 +367,7 @@ export default {
       this.uploadType = 0;
   },
   beforeDestroy() {
+    this.uploading = false;
     this.newFolders = [];
     this.newFiles = [];
   }
